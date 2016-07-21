@@ -1,35 +1,42 @@
 module Fib
   class PermissionsCollection
-    attr_accessor :roles, :permissions, :permissions_array
+    # permissions: array for merge
+    # permissions_map: hash for search
+    attr_accessor :permissions, :permissions_map
 
     def initialize
-      @roles = []
-      @permissions = {} # for search
-      @permissions_array = [] # for merge
+      @permissions = []
+      @permissions_map = {} # for merge
     end
 
     # find permission from collection
     def get(model, action)
-      return nil unless @permissions.has_key? model
-      return nil unless @permissions[model].has_key? action
-      @permissions[model][action]
+      return nil unless @permissions_map.has_key? model
+      return nil unless @permissions_map[model].has_key? action
+      @permissions_map[model][action]
     end
 
     def set(permission)
       raise ParameterIsNotValid, "set method can't accept expect permission object" unless permission.is_a?(Fib::Permission)
-      @permissions[permission.model] ||= {}
-      @permissions[permission.model][permission.action_name] = permission
-      @permissions_array | [permission]
+      @permissions_map[permission.model] ||= {}
+      @permissions_map[permission.model][permission.action_name] = permission
+      @permissions | [permission]
+    end
+
+    def mset(*permissions)
+      permissions.flatten.each do |p|
+        next unless permission.is_a?(Fib::Permission)
+        set p
+      end
     end
 
     def delete(permission)
       raise ParameterIsNotValid, "set method can't accept expect permission object" unless permission.is_a?(Fib::Permission)
-      @permissions[permission.model] ||= {}
-      @permissions[permission.model].delete[permission.action_name]
-      @permissions_array.delete permission
+      @permissions_map[permission.model] ||= {}
+      @permissions_map[permission.model].delete[permission.action_name]
+      @permissions.delete permission
     end
 
-    # add new permission
     def add_permission(*options)
       if options.size < 2 && options.first.is_a?(Fib::Permission)
         set options.first
@@ -38,13 +45,11 @@ module Fib
       end
     end
 
-    def add_role(role)
-      raise ParameterIsNotValid, "add_role method can't accept expect role object" unless role.const_defined?("MAGIC_NUM") && role.const_get("MAGIC_NUM") == Fib::MAGIC_NUM
-      @roles | [role]
-    end
-
-    def permissions_group(custom="")
-      Fib::Ext.permissions_merge(permissions, custom)
+    %w(+ - & |).each do |a|
+      define_method a do |permissions|
+        raise ParameterIsNotValid unless permissions.is_a? Fib::PermissionsCollection
+        self.class.build_by_permissions(self.permissions.send(a, permissions.permissions))
+      end
     end
 
     class << self
@@ -58,10 +63,8 @@ module Fib
       end
 
       def build_by_permissions(permissions)
-        return unless permissions.present?
-        pc = Fib::PermissionsCollection.new
-        permissions.each { |p| pc.set p }
-        pc
+        return unless permissions.is_a? Array
+        new.tap { |p| p.mset permissions }
       end
     end
   end
