@@ -24,8 +24,8 @@ module Fib
         model, action_name, type = data.split("-")
         p = Fib.all_permissions.get(model, action_name)
         next unless p
-        add_permissions.set p.first if type = "1"
-        del_permissions.set p.first if type = "0"
+        add_permissions.set p if type == "1"
+        del_permissions.set p if type == "0"
       end
 
       { 1 => add_permissions, 0 => del_permissions }
@@ -40,7 +40,8 @@ module Fib
       add_datas = add_permissions.permissions.map { |p| data_value(p, "1") }
       del_datas = del_permissions.permissions.map { |p| data_value(p, "0") }
 
-      Fib.redis.sadd(data_key, *(add_datas + del_datas))
+      Fib.redis.delete(data_key)
+      Fib.redis.sadd(data_key, add_datas + del_datas)
 
       reload_permissions!
     end

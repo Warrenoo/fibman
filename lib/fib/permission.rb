@@ -8,8 +8,9 @@ module Fib
       @model = model.to_s.freeze
       raise MissParameter, "missing the action_name with permission init!" unless options.has_key?(:action_name)
       @action_name = options[:action_name].to_s.freeze
-      @action_package = options[:action_package].map(&:to_s) || [@action_name]
-      @expain = options[:explain] || "undefined"
+      @action_package = (options[:action_package].map(&:to_s) || [@action_name]).map { |n| Fib::Action.new @model, n }
+      @explain = options[:explain] || "undefined"
     end
+
   end
 end

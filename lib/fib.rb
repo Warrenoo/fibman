@@ -6,12 +6,15 @@ require "fib/permissions_collection"
 require "fib/permission"
 require "fib/role_inject"
 require "fib/user_inject"
+require "fib/action"
 require "fib/version"
 
 module Fib
   class << self
     extend Forwardable
     def_delegators Fib::Config, :configure
+    def_delegators Fib::PermissionsCollection, :build
+    def_delegators Fib::Action, :define_condition
 
     def redis
       Fib::Config.redis_record
@@ -26,8 +29,8 @@ module Fib
     end
 
     def loading!
-      raise UserClassIsNotFind unless Fib::Config.user_class.present? && defined? Fib::Config.user_class
-      Fib::Config.user_class.intance_exec { include UserInject }
+      raise UserClassIsNotFind unless Fib::Config.user_class.present?
+      Object.const_get(Fib::Config.user_class).instance_exec { include Fib::UserInject }
     end
   end
 end
