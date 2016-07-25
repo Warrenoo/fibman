@@ -37,7 +37,7 @@ module Fib
       @permissions.delete permission
     end
 
-    def add_permission(*options)
+    def add(*options)
       if options.size < 2 && options.first.is_a?(Fib::Permission)
         set options.first
       else
@@ -70,7 +70,7 @@ module Fib
 
     extend Forwardable
     require 'fib/action'
-    def_delegators Fib::Action, :define_condition
+    def_delegators Fib::Action, :can_if
 
     class << self
       def all_permissions

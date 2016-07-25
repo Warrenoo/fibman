@@ -21,7 +21,7 @@ module Fib
         all_actions[action.model][action.action_name] = action
       end
 
-      def define_condition(model, actions, &block)
+      def can_if(model, actions, &block)
         return unless block_given?
         return unless actions.is_a?(Array) && actions.size > 0
         actions.each do |a|
