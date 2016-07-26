@@ -4,4 +4,5 @@ module Fib
   class ParameterIsNotValid < RuntimeError; end
   class RoleIsNotFind < RuntimeError; end
   class UserClassIsNotFind < RuntimeError; end
+  class PermissionIsNotFind < RuntimeError; end
 end

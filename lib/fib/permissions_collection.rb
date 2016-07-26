@@ -23,6 +23,8 @@ module Fib
       @permissions |= [permission]
     end
 
+    alias_method :<<, :set
+
     def mset(*permissions)
       permissions.flatten.each do |p|
         next unless p.is_a?(Fib::Permission)
@@ -45,6 +47,30 @@ module Fib
       end
     end
 
+    def bind(klass_1, action_1, klass_2, action_2)
+      raise PermissionIsNotFind unless check_model_action(klass_1, action_1)
+      raise PermissionIsNotFind unless check_model_action(klass_2, action_2)
+
+      @permissions_map[klass_1.to_s][action_1.to_s].bind << @permissions_map[klass_2.to_s][action_2.to_s]
+    end
+
+    def bind_self(klass, *action_arr)
+      first_action = action_arr.shift
+      raise PermissionIsNotFind unless check_model_action(klass.to_s, first_action.to_s)
+
+      record = @permissions_map[klass.to_s][first_action.to_s]
+
+      action_arr.each do |a|
+        next unless check_model_action(klass, a)
+        record.bind << @permissions_map[klass.to_s][a.to_s]
+      end
+
+    end
+
+    def empty?
+      @permissions.size == 0
+    end
+
     %w(+ - & |).each do |a|
       define_method a do |permissions|
         raise ParameterIsNotValid unless permissions.is_a? Fib::PermissionsCollection
@@ -52,20 +78,49 @@ module Fib
       end
     end
 
-    def format_cancan(user)
-      params = permissions.map do |p|
-        p.action_package.map do |a|
-          attrs = { default: [a.action_name.to_sym, Object.const_get(a.model)] }
-          attrs[:cond] = proc { |target| a.condition[target, user] } if a.condition.present?
-          attrs
-        end
-      end.flatten
+    def inject_cancan(user)
+      params = permission_params(user)
 
       proc do
         params.each do |p|
           p.has_key?(:cond) ? can(*p[:default], &p[:cond]) : can(*p[:default])
         end
       end
+    end
+
+    def permission_params(user)
+      permissions.map do |p|
+
+        default_params =
+          p.action_package.map do |a|
+            attrs = { default: [a.action_name.to_sym, Object.const_get(a.model)] }
+            attrs[:cond] = proc { |target| a.condition[target, user] } if a.condition.present?
+            attrs
+          end
+
+        bind_params =
+          if p.bind.empty?
+            []
+          else
+            p.bind.permission_params(user)
+          end
+
+        default_params + bind_params
+
+      end.flatten.uniq
+    end
+
+    def check_model_action(model, action)
+      hash = @permissions_map[model.to_s]
+      return false unless hash.is_a? Hash
+      record = hash[action.to_s]
+      return false unless record.is_a? Fib::Permission
+
+      true
+    end
+
+    def display
+      @display ||= @permissions.select { |p| p.display }
     end
 
     extend Forwardable
