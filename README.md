@@ -120,19 +120,19 @@
 ###DEFECTS
 
    - 定义新权限时，不支持Rails的热加载，需自行重启server
-   - 如果开发模式下对用户类进行了修改，Rails会对用户类进行热加载，这个时候用户权限模块的注入会失效，需要重新进行Fib.reload!, 建议在进行current_staff获取的时候进行。
+   - 如果开发模式下对用户类进行了修改，Rails会对用户类进行热加载，这个时候用户权限模块的注入会失效，需要重新进行Fib.reload!, 建议在进行current_user获取的时候进行。
    
      ```
-     def current_staff
-       @current_staff ||= Bss::Staff.find_by id: session[:staff_id]
+     def current_user
+       @current_user ||= User.find_by id: session[:user_id]
 
-       if Rails.env.development? && @current_staff && !(@current_staff.respond_to? :final_permissions)
+       if Rails.env.development? && @current_user && !(@current_user.respond_to? :final_permissions)
          Fib.loading!
-         @current_staff = nil
-         current_staff
+         @current_user = nil
+         current_user
       end
 
-      @current_staff
+      @current_user
     end
     ```
     
