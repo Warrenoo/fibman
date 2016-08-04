@@ -139,6 +139,30 @@ module Fib
         return unless permissions.is_a? Array
         new.tap { |p| p.mset permissions }
       end
+
+      def handle_event(message)
+        event, *permissions = message.split('|')
+        permission_hash = Hash[*permissions]
+        send(event, permission_hash) if respond_to?(event)
+      end
+
+      def add_permission(permissions)
+        all_permissions do
+          permissions.each_pair do |model_name, action|
+            model = (Module.const_get(model_name) rescue nil)
+            add(model, action_name: action) if model
+          end
+        end
+      end
+
+      def del_permission(permissions)
+        all_permissions do
+          permissions.each_pair do |model_name, action|
+            model = (Module.const_get(model_name) rescue nil)
+            @permissions_map[model].delete(action) if model && @permissions_map[model]
+          end
+        end
+      end
     end
   end
 end

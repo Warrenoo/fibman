@@ -7,8 +7,20 @@ module Fib
         @open_ext ||= false
       end
 
-      def configure
+      def configure_without_subscribe
         yield(self)
+      end
+
+      def configure(&block)
+        configure_without_subscribe(&block)
+        Thread.new do
+          Fib.redis.subscribe("permission_events") do |event|
+            event.message do |channel, body|
+              p "permission_events recive: #{body}"
+              Fib.handle_event(body)
+            end
+          end
+        end
       end
     end
   end

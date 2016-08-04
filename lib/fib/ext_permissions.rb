@@ -45,6 +45,8 @@ module Fib
       permissions_restore!
       Fib.redis.sadd(data_key, add_datas + del_datas) unless (add_datas + del_datas).empty?
 
+      pub_permissions('add_permissions', add_permissions)
+      pub_permissions('del_permissions', del_permissions)
       reload_permissions!
     end
 
@@ -59,6 +61,11 @@ module Fib
     end
 
     private
+
+    def pub_permissions(event, permissions)
+      body = permissions.each_with_object([event]){|p, arr| arr.push(p.model.to_s, p.action_name) }.join('|')
+      Fib.redis.publish('permission_events', body)
+    end
 
     def data_value(permission, type)
       raise ParameterIsNotValid unless permission.is_a? Fib::Permission
