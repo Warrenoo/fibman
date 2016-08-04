@@ -42,12 +42,10 @@ module Fib
       add_datas = add_permissions.permissions.map { |p| data_value(p, "1") }
       del_datas = del_permissions.permissions.map { |p| data_value(p, "0") }
 
+      return nil if (add_datas + del_datas).empty?
       permissions_restore!
-      Fib.redis.sadd(data_key, add_datas + del_datas) unless (add_datas + del_datas).empty?
-
-      pub_permissions('add_permissions', add_permissions)
-      pub_permissions('del_permissions', del_permissions)
-      reload_permissions!
+      Fib.redis.sadd(data_key, add_datas + del_datas) 
+      pub_permissions('reload_permissions')
     end
 
     # 还原权限
@@ -62,9 +60,8 @@ module Fib
 
     private
 
-    def pub_permissions(event, permissions)
-      body = permissions.each_with_object([event]){|p, arr| arr.push(p.model.to_s, p.action_name) }.join('|')
-      Fib.redis.publish('permission_events', body)
+    def pub_permissions(event)
+      Fib.redis.publish('permission_events', event)
     end
 
     def data_value(permission, type)
