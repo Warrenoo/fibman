@@ -14,7 +14,6 @@ module Fib
     extend Forwardable
     def_delegators Fib::Config, :configure
     def_delegators Fib::PermissionsCollection, :build
-    def_delegators Fib::PermissionsCollection, :handle_event
     def_delegators Fib::Action, :can_if
 
     def redis
