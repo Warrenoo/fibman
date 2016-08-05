@@ -87,7 +87,7 @@ module Fib
       end
     end
 
-    def permission_params(user, dig = true)
+    def permission_params(user)
       permissions.map do |p|
         default_params =
           p.action_package.map do |a|
@@ -96,11 +96,11 @@ module Fib
             attrs
           end
         bind_params =
-          if bind.empty? || !dig
+          if p.bind.empty?
             []
           else
-            p.bind.permission_params(user, false)
-          end
+            p.bind.permission_params(user)
+         end
         default_params + bind_params
       end.flatten.uniq
     end
