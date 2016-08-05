@@ -23,7 +23,7 @@ module Fib
       @permissions |= [permission]
     end
 
-    alias_method :<<, :set
+    alias << set
 
     def mset(*permissions)
       permissions.flatten.each do |p|
@@ -87,25 +87,21 @@ module Fib
       end
     end
 
-    def permission_params(user)
+    def permission_params(user, dig = true)
       permissions.map do |p|
-
         default_params =
           p.action_package.map do |a|
             attrs = { default: [a.action_name.to_sym, Object.const_get(a.model)] }
             attrs[:cond] = proc { |target| a.condition[target, user] } if a.condition.present?
             attrs
           end
-
         bind_params =
-          if p.bind.empty?
+          if bind.empty? || !dig
             []
           else
-            p.bind.permission_params(user)
+            p.bind.permission_params(user, false)
           end
-
         default_params + bind_params
-
       end.flatten.uniq
     end
 
@@ -119,7 +115,7 @@ module Fib
     end
 
     def display
-      @display ||= self.class.build_by_permissions @permissions.select { |p| p.display }
+      @display ||= self.class.build_by_permissions @permissions.select(&:display)
     end
 
     extend Forwardable
@@ -138,30 +134,6 @@ module Fib
       def build_by_permissions(permissions)
         return unless permissions.is_a? Array
         new.tap { |p| p.mset permissions }
-      end
-
-      def handle_event(message)
-        event, *permissions = message.split('|')
-        permission_hash = Hash[*permissions]
-        send(event, permission_hash) if respond_to?(event)
-      end
-
-      def add_permission(permissions)
-        all_permissions do
-          permissions.each_pair do |model_name, action|
-            model = (Module.const_get(model_name) rescue nil)
-            add(model, action_name: action) if model
-          end
-        end
-      end
-
-      def del_permission(permissions)
-        all_permissions do
-          permissions.each_pair do |model_name, action|
-            model = (Module.const_get(model_name) rescue nil)
-            @permissions_map[model].delete(action) if model && @permissions_map[model]
-          end
-        end
       end
     end
   end
