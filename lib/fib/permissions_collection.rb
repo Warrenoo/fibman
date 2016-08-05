@@ -23,7 +23,7 @@ module Fib
       @permissions |= [permission]
     end
 
-    alias_method :<<, :set
+    alias << set
 
     def mset(*permissions)
       permissions.flatten.each do |p|
@@ -89,23 +89,19 @@ module Fib
 
     def permission_params(user)
       permissions.map do |p|
-
         default_params =
           p.action_package.map do |a|
             attrs = { default: [a.action_name.to_sym, Object.const_get(a.model)] }
             attrs[:cond] = proc { |target| a.condition[target, user] } if a.condition.present?
             attrs
           end
-
         bind_params =
           if p.bind.empty?
             []
           else
             p.bind.permission_params(user)
-          end
-
+         end
         default_params + bind_params
-
       end.flatten.uniq
     end
 
@@ -119,7 +115,7 @@ module Fib
     end
 
     def display
-      @display ||= self.class.build_by_permissions @permissions.select { |p| p.display }
+      @display ||= self.class.build_by_permissions @permissions.select(&:display)
     end
 
     extend Forwardable
