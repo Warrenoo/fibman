@@ -15,14 +15,12 @@ module Fib
 
       def configure(&block)
         configure_without_subscribe(&block)
-        @mutex.synchronize do        
+
+        @mutex.synchronize do
           return nil if @subscribed
           Thread.new do
             Fib.redis.subscribe("permission_events") do |event|
-              event.message do |channel, body|
-                p "permission_events recive: #{body}"
-                Fib.all_roles.each{|r| r.reload_permissions! }
-              end
+              event.message { |channel, body| Fib.handle body }
             end
           end
           @subscribed = true

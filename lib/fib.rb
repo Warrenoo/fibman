@@ -7,6 +7,7 @@ require "fib/permission"
 require "fib/role_inject"
 require "fib/user_inject"
 require "fib/action"
+require "fib/handle_sub"
 require "fib/version"
 
 module Fib
@@ -15,6 +16,7 @@ module Fib
     def_delegators Fib::Config, :configure
     def_delegators Fib::PermissionsCollection, :build
     def_delegators Fib::Action, :can_if
+    def_delegators Fib::HandleSub, :handle
 
     def redis
       Fib::Config.redis_record
