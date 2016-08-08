@@ -14,7 +14,6 @@ module Fib
           record = Fib.get_role_by_name(key)
           if record
             record.reload_permissions!
-            record.final_permissions
           end
         end
       end
