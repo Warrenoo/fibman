@@ -117,6 +117,21 @@
 
    ```
 
+###CACHE
+  
+  权限的缓存分为两种情况，一种为user实例对象的权限缓存，一种为role类对象的权限缓存，我们只需要handle role类的权限缓存的更新问题。
+  由于项目部署方式的不同，需要考虑多进程运行时，回调更新各个进程中的类对象缓存。
+  这里采用的方案是使用redis的sub\pub方式进行通知
+
+  ```
+  # config/puma.rb
+  on_worker_boot do
+    Fib.listen_cache!
+  end
+
+  ```
+  在puma子进程fork后, 启动线程进行redis channel订阅
+
 ###DEFECTS
 
    - 定义新权限时，不支持Rails的热加载，需自行重启server
