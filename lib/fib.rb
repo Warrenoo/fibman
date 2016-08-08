@@ -13,7 +13,7 @@ require "fib/version"
 module Fib
   class << self
     extend Forwardable
-    def_delegators Fib::Config, :configure
+    def_delegators Fib::Config, :configure, :open_ext
     def_delegators Fib::PermissionsCollection, :build
     def_delegators Fib::Action, :can_if
     def_delegators Fib::HandleSub, :handle
@@ -30,9 +30,37 @@ module Fib
       @all_roles ||= []
     end
 
+    def get_role_by_name(role_name)
+      all_roles.find { |r| r.role_name == role_name }
+    end
+
+    def listen_cache!
+      mutex.synchronize do
+        return nil if subscribed
+        Thread.new do
+          Fib.redis.dup.subscribe("permission_events") do |event|
+            event.message { |channel, body| Fib.handle body }
+          end
+        end
+        self.subscribed = true
+      end
+    end
+
     def loading!
       raise UserClassIsNotFind unless Fib::Config.user_class.present?
       Object.const_get(Fib::Config.user_class).instance_exec { include Fib::UserInject }
+    end
+
+    private
+
+    attr_writer :subscribed
+
+    def mutex
+      @mutex ||= Mutex.new
+    end
+
+    def subscribed
+      @subscribed ||= false
     end
   end
 end

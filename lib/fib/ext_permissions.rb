@@ -14,7 +14,7 @@ module Fib
     end
 
     def final_permissions
-      @final_permissions ||= Fib::Config.open_ext ? ((default_permissions | ext_permissions[1]) - ext_permissions[0]) : default_permissions
+      @final_permissions ||= Fib.open_ext ? ((default_permissions | ext_permissions[1]) - ext_permissions[0]) : default_permissions
     end
 
     def ext_permissions
@@ -43,19 +43,21 @@ module Fib
       del_datas = del_permissions.permissions.map { |p| data_value(p, "0") }
 
       return nil if (add_datas + del_datas).empty?
+
       permissions_restore!
-      Fib.redis.sadd(data_key, add_datas + del_datas) 
-      pub_permissions('reload_permissions')
+      Fib.redis.sadd(data_key, add_datas + del_datas)
+
+      pub_permissions("reload_permissions:role:#{self.role_name}") if Fib.all_roles.include? self
     end
 
     # 还原权限
     def permissions_restore!
       Fib.redis.del(data_key)
-      reload_permissions!
     end
 
     def reload_permissions!
       @final_permissions = nil
+      final_permissions
     end
 
     private
