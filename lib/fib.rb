@@ -1,5 +1,8 @@
 require "forwardable"
 require "fib/config"
+require "fib/trie"
+require "fib/element"
+require "fib/element_package"
 require "fib/error"
 require "fib/ext_permissions"
 require "fib/permissions_collection"
