@@ -1,5 +1,5 @@
 require "forwardable"
-require "activesupport"
+require "active_support"
 
 require "fib/config"
 require "fib/container"
@@ -17,8 +17,6 @@ require "fib/manage/targeter_manage"
 require "fib/manage/rails_controller_manage"
 
 module Fib
-  class << self
-    extend SingleForwardable
-    def_delegator Fib::Container, :new
-  end
+  extend SingleForwardable
+  def_delegator Fib::Container, :new
 end

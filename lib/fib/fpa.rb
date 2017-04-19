@@ -3,7 +3,7 @@ module Fib
   class Fpa
     attr_accessor :redis
 
-    def initialize redis
+    def initialize redis=nil
       @redis = redis
     end
 

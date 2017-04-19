@@ -8,10 +8,6 @@ module Fib
       @subnode = subnode
     end
 
-    def subnode
-      super || {}
-    end
-
     def dig(*node_key)
       return nil unless node_key.is_a? Array
 

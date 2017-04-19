@@ -4,8 +4,6 @@ module Fib
       extend ActiveSupport::Concern
 
       included do
-        attr_accessor :permissions, :fib_identify
-
         class << self; attr_accessor :fib_container; end
       end
 
@@ -14,7 +12,7 @@ module Fib
       end
 
       def permissions_info
-        permissions.permissions.map{ |p| [p.key, p.name] }
+        permissions.permissions.select{ |p| p.display }.map{ |p| [p.key, p.name] }
       end
 
       def save_permissions

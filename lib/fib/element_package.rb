@@ -7,14 +7,14 @@
 # mutex 为 true 时需要重新build
 module Fib
   class ElementPackage
-    attr_accessor :keys, :actions, :urls, :origin_elements, :mutex
+    attr_reader :keys, :actions, :urls, :origin_elements, :mutex
 
-    def initialize elements
-      return nil unless elements.is_a? Array
+    def initialize elements=[]
+
       @keys = {}
       @actions = {}
       @urls = Fib::Trie.new('.', nil)
-      @origin_elements = elements.group_by(&:type)
+      @origin_elements = elements.group_by{ |e| e.type }
 
       rebuild
     end
@@ -22,6 +22,7 @@ module Fib
     def set element
       raise ParameterIsNotValid, "param must be Element" unless element.is_a?(Fib::Element)
 
+      origin_elements[element.type] ||= []
       origin_elements[element.type] |= [element]
 
       rebuild
@@ -39,12 +40,12 @@ module Fib
     alias_method :append, :mset
 
     def + package
-      new (origin_elements.values.flatten + package.origin_elements.values.flatten).uniq
+      self.class.new (origin_elements.values.flatten + package.origin_elements.values.flatten).uniq
     end
 
     def find_key k
       lazy_build
-      keys&.fetach(k.to_sym)
+      keys&.fetch(k.to_sym)
     end
 
     def find_action controller, action
@@ -54,7 +55,7 @@ module Fib
 
     def find_url url
       lazy_build
-      urls&.dig(*url.split(/\//))
+      urls&.dig(*url.gsub(/^\/|\/$/, "").split(/\//))
     end
 
     def build
@@ -83,7 +84,7 @@ module Fib
     def build_keys
       return unless origin_elements.has_key? 'key'
 
-      origin_elements['key'].each { |e| @key[e.core] = e }
+      origin_elements['key'].each { |e| keys[e.core] = e }
     end
 
     def build_actions
@@ -93,8 +94,8 @@ module Fib
         next unless e.core.is_a? Hash
 
         key = e.core[:controller].to_s
-        @actions[key] ||= {}
-        @actions[key][e.core[:action].to_s] = e
+        actions[key] ||= {}
+        actions[key][e.core[:action].to_s] = e
       end
     end
 
@@ -104,9 +105,10 @@ module Fib
       origin_elements['url'].each do |e|
         next unless e.core.is_a? String
 
-        split_url = e.core.split(/\//)
-        split_url.each_with_index.reduce(@urls) do |i, (j, index)|
-          t = i.add_node j, (index == split_url.size - 1 ? e : nil)
+        # 过滤首尾 / 并以 / 分割
+        split_url = e.core.gsub(/^\/|\/$/, "").split(/\//)
+        split_url.each_with_index.reduce(urls) do |i, (j, index)|
+          t = i.add_sub j, (index == split_url.size - 1 ? e : nil)
           t
         end
       end

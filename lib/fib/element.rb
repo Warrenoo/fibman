@@ -7,8 +7,8 @@ module Fib
       raise UnValidElementType, "current type -> #{type}, type need in (#{TYPE.join(", ")})!" unless TYPE.include? type
       @type = type
       @core = core
-      raise ParameterIsNotValid, "Condition must belong to Proc!" unless condition.is_a? Proc
-      @condition = condition
+      raise ParameterIsNotValid, "Condition must belong to Proc!" unless condition.nil? || condition.is_a?(Proc)
+      @condition = condition || -> {}
     end
 
     def set_permission permission
@@ -31,7 +31,7 @@ module Fib
       end
 
       def create_url url, &block
-        new "url", url, desc, block
+        new "url", url, block
       end
 
     end

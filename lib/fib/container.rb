@@ -4,27 +4,32 @@ module Fib
 
     attr_accessor :name, :permissions, :config, :fpa
 
-    def_delegators :config, :configure
+    def_delegator :config, :configure, :config_configure
 
     def initialize name
       @name = name
       @permissions = Fib::PermissionsCollection.new
       @config = Fib::Config.new
-      @fpa = Fib::Fpa.new config.redis
+      @fpa = Fib::Fpa.new
     end
 
-    def configure
-      super
+    def configure &block
+      config_configure &block
       loading!
     end
 
     def loading!
+      load_fpa
       inject_targeters
       inject_controllers
     end
 
-    def build
-      permissions.instance_exec { yield }
+    def load_fpa
+      fpa.redis = config.redis
+    end
+
+    def build &block
+      permissions.instance_exec &block
     end
 
     def restore_permissions redis_key
@@ -38,14 +43,14 @@ module Fib
         next if t.respond_to? :fib_container
 
         t.include Fib::Manage::TargeterManage
-        c.fib_container = self
+        t.fib_container = self
       end
     end
 
     def inject_controllers
       config.controllers.each do |c|
         if defined?(Rails) && c.ancestors.include?(ActionController::Metal)
-          next if t.respond_to? :fib_container
+          next if c.respond_to? :fib_container
 
           c.include Fib::Manage::RailsControllerManage
           c.fib_container = self

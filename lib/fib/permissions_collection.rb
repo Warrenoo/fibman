@@ -18,7 +18,7 @@ module Fib
 
     def set permission
       raise ParameterIsNotValid, "set method can't accept expect permission object" unless permission.is_a?(Fib::Permission)
-      raise ParameterIsNotValid, "permission key was inside this collection" unless @permissions.has_key? permissions.key
+      raise ParameterIsNotValid, "permission key #{permission.key} is exist" if permissions.has_key? permission.key
 
       @permissions[permission.key] = permission
       @package += permission.package
@@ -72,7 +72,7 @@ module Fib
       permissions.select { |k, v| keys.include? k }.values
     end
 
-    def add key, name, options={}
+    def add key, name, options={}, &block
       keys = options[:key] || []
       urls = options[:url] || []
       bind = options[:bind] || []
@@ -93,7 +93,7 @@ module Fib
       display ? permission.display_on : permission.display_off unless display.nil?
 
       # 执行自定义闭包
-      permission.instance_exec { yield } if block_given?
+      permission.instance_exec &block if block_given?
 
       # 设置elements所属permission
       permission.inject_elements_permission

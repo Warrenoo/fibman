@@ -8,7 +8,7 @@ module Fib
         before_action :fib_action_validation
         before_action :fib_include_validation
 
-        rescue_form Fib::UnPassPermissionValidation do
+        rescue_from Fib::UnPassPermissionValidation do
           render status: 403 and return
         end
 
