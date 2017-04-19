@@ -1,41 +1,39 @@
 module Fib
   class Element
-    attr_accessor :type, :core, :condition, :desc
+    attr_reader :type, :core, :condition, :permission_key
     TYPE = %w(key action url).freeze
 
-    def initialize(type, core, desc, condition=nil)
-      @type = TYPE.include? type ? type : TYPE.first
-
-      case @type
-      when 'key'
-      when 'action'
-      when 'url'
-      end
-
+    def initialize type, core, condition=->{}
+      raise UnValidElementType, "current type -> #{type}, type need in (#{TYPE.join(", ")})!" unless TYPE.include? type
+      @type = type
+      @core = core
+      raise ParameterIsNotValid, "Condition must belong to Proc!" unless condition.is_a? Proc
       @condition = condition
-      Fib::Element.set_element(self)
+    end
+
+    def set_permission permission
+      @permission_key = permission.is_a?(Fib::Permission) ? permission.key : permission
+    end
+
+    def pass_condition?(*args)
+      return true if condition.nil?
+      condition(*args)
     end
 
     class << self
-      attr_accessor :all_elements
 
-      def all_elements
-        @all_elements ||= ElementPackage.new
+      def create_key key, &block
+        new "key", key, block
       end
 
-      def set_element(element)
-        all_actions.add(element)
+      def create_action controller, action, &block
+        new "action", {controller: controller.to_s, action: action.to_s}, block
       end
 
-      def can_if(model, actions, &block)
-        return unless block_given?
-        return unless actions.is_a?(Array) && !actions.empty?
-        actions.each do |a|
-          next unless all_actions[model.to_s] && all_actions[model.to_s][a.to_s]
-          action_record = all_actions[model.to_s][a.to_s]
-          action_record.condition = block if action_record && action_record.is_a?(Fib::Action)
-        end
+      def create_url url, &block
+        new "url", url, desc, block
       end
+
     end
   end
 end

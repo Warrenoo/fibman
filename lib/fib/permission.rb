@@ -1,18 +1,51 @@
+# Permission Particle
 module Fib
-  # Permission Particle
   class Permission
-    attr_accessor :model, :model_name, :action_name, :action_package, :explain, :bind, :display
+    extend Forwardable
 
-    def initialize(model, options)
-      raise UnDefinedModel, "Can't find model, Please confim defined it!" unless defined? model
-      @model = model.to_s.freeze
-      @model_name = options[:model_name] || "undefined"
-      raise MissParameter, "missing the action_name with permission init!" unless options.key?(:action_name)
-      @action_name = options[:action_name].to_s.freeze
-      @action_package = (options[:action_package].map(&:to_s) || [@action_name]).map { |n| Fib::Action.new @model, n }
+    attr_reader :key, :name, :package, :explain, :bind, :display
+
+    def_delegators :package, :append
+
+    def initialize key, options={}
+      @key = key.to_sym
+      @name = options[:name] || key.to_s
+      @package = options[:package] || Fib::ElementPackage.new
       @explain = options[:explain] || "undefined"
-      @bind = options[:bind] || Fib::PermissionsCollection.new
+      @bind = options[:bind] || []
       @display = options.key?(:display) ? options[:display] : true
+    end
+
+    def def_action controller, action, &block
+      @package << Fib::Element.create_action(controller, action, &block)
+    end
+
+    def def_url url, &block
+      @package << Fib::Element.create_url(url, &block)
+    end
+
+    def def_key key, &block
+      @package << Fib::Element.create_key(key, &block)
+    end
+
+    def display_on
+      return unless bind.size == 0
+      @display = true
+    end
+
+    def display_off
+      @display = false
+    end
+
+    def bind_permission *permission_keys
+      @bind = permission_keys.flatten
+      display_off if bind.size > 0
+    end
+
+    def inject_elements_permission
+      package.origin_elements.values.flatten.each do |e|
+        e.set_permission self
+      end
     end
 
   end
