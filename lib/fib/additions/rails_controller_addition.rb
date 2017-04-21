@@ -15,7 +15,7 @@ module Fib
 
       def can? key, obj=nil
         key_element = permissions.find_key(key)
-        key_element && key_element.pass_condition?(current_user, obj)
+        key_element.present? && key_element.pass_condition?(current_user, obj)
       end
 
       def cannot? key, obj=nil
@@ -52,11 +52,14 @@ module Fib
       # 如果该请求访问未在权限系统中设置
       # 通过并提示
       def fib_include_validation
-        if fib_container.permissions.find_action(self.class.name, self.action_name) || fib_container.permissions.find_url(request.path)
-          fib_url_validation
-          fib_action_validation
-        else
-          # TODO 设定提示策略
+        has_action = fib_container.permissions.find_action(self.class.name, self.action_name).present?
+        has_url = fib_container.permissions.find_url(request.path).present?
+
+        fib_action_validation if has_action
+        fib_url_validation if has_url
+
+        unless has_action || has_url
+          # TODO 进行提示 策略待定
         end
       end
     end

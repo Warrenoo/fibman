@@ -12,6 +12,11 @@ module Fib
       @package = Fib::ElementPackage.new
     end
 
+    def permissions_info
+      permissions.values.select { |v| v.display }
+        .map { |v| [v.key, v.name] }
+    end
+
     def keys
       permissions.keys
     end
@@ -72,17 +77,22 @@ module Fib
       permissions.select { |k, v| keys.include? k }.values
     end
 
-    def add key, name, options={}, &block
-      keys = options[:key] || []
-      urls = options[:url] || []
-      bind = options[:bind] || []
+    def add key, name="", options={}, &block
+      return unless key.present?
+
+      keys = [options[:key] || []].flatten
+      urls = [options[:url] || []].flatten
+      bind = [options[:bind] || []].flatten
       actions = options[:action] || []
       display = options[:display] if options.key? :display
 
       # 构建权限对象
       permission = Fib::Permission.new key, name: name
 
+      # 默认创建一个与permission key相同的element key类型
+      permission.append Fib::Element.create_key key
       permission.append keys.map{ |k| Fib::Element.create_key k }
+
       permission.append urls.map{ |u| Fib::Element.create_url u }
       permission.append actions.map do |a|
         controller = a.shift

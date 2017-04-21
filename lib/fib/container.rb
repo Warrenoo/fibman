@@ -4,6 +4,7 @@ module Fib
 
     attr_accessor :name, :key, :permissions, :config, :fpa
 
+    def_delegator :permissions, :permissions_info
     def_delegator :config, :configure, :config_configure
 
     cattr_accessor(:containers) { [] }

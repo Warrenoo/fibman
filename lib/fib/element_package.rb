@@ -45,7 +45,7 @@ module Fib
 
     def find_key k
       lazy_build
-      keys&.fetch(k.to_sym)
+      keys[k.to_sym]
     end
 
     def find_action controller, action

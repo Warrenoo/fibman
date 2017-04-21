@@ -4,12 +4,10 @@ module Fib
       extend ActiveSupport::Concern
       include Fib::Additions::ContainerAddition
 
+      delegate :permissions_info, to: :permissions
+
       def permissions
         @permissions ||= get_persistence_permissions || Fib::PermissionsCollection.new
-      end
-
-      def permissions_info
-        permissions.permissions.select{ |p| p.display }.map{ |p| [p.key, p.name] }
       end
 
       def save_permissions
@@ -17,6 +15,7 @@ module Fib
       end
 
       def build_permissions *permission_keys
+        clear_permissions
         permission_keys = [permission_keys].flatten
         @permissions = fib_container.permissions.extract_by_keys permission_keys
         save_permissions

@@ -8,7 +8,7 @@ module Fib
     end
 
     def save redis_key, content
-      redis.sadd redis_key, *content
+      redis.sadd redis_key, content
     end
 
     def get redis_key
