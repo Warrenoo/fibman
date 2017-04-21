@@ -104,13 +104,10 @@ module Fib
 
 
     class << self
-
       def build_by_permissions permissions
         return unless permissions.is_a? Array
         new.tap { |p| p.append(*permissions) }
       end
-
     end
-
   end
 end

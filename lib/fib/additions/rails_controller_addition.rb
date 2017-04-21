@@ -1,21 +1,20 @@
 module Fib
-  module Manage
-    module RailsControllerManage
+  module Additions
+    module RailsControllerAddition
       extend ActiveSupport::Concern
+      include Fib::Additions::ContainerAddition
 
       included do
-        before_action :fib_url_validation
-        before_action :fib_action_validation
         before_action :fib_include_validation
 
-        rescue_from Fib::UnPassPermissionValidation do
-          render status: 403 and return
-        end
-
-        class << self; attr_accessor :fib_container; end
+        rescue_from Fib::UnPassPermissionValidation, with: :handle_fib_permission_error
       end
 
       private
+
+      def handle_fib_permission_error
+        render status: 401, plain: "No permission" and return
+      end
 
       # 验证url权限
       def fib_url_validation
@@ -38,16 +37,15 @@ module Fib
         end
       end
 
-      # 如果该请求在权限系统中设置
-      # 通过请求并提式
+      # 如果该请求访问未在权限系统中设置
+      # 通过并提示
       def fib_include_validation
-        unless fib_container.permissions.find_action(self.class.name, self.action_name) || fib_container.permissions.find_url(request.path)
+        if fib_container.permissions.find_action(self.class.name, self.action_name) || fib_container.permissions.find_url(request.path)
+          fib_url_validation
+          fib_action_validation
+        else
           # TODO 设定提示策略
         end
-      end
-
-      def fib_container
-        self.class.fib_container
       end
     end
   end

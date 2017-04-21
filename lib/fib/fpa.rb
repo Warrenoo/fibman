@@ -13,7 +13,7 @@ module Fib
 
     def get redis_key
       return nil unless redis.exists(redis_key)
-      redis.smembers redis_key
+      redis.smembers(redis_key).map(&:to_sym)
     end
 
     def clear redis_key

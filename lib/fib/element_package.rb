@@ -50,7 +50,7 @@ module Fib
 
     def find_action controller, action
       lazy_build
-      actions&.fetch(controller.to_s)&.fetch(action.to_s)
+      actions&.dig(controller.to_s, action.to_s)
     end
 
     def find_url url
@@ -115,12 +115,9 @@ module Fib
     end
 
     class << self
-
       def merge *packages
         new (packages.reduce { |a, e| a + e.origin_elements.values.flatten }).uniq
       end
-
     end
-
   end
 end

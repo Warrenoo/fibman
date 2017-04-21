@@ -1,6 +1,6 @@
 module Fib
   class Config
-    attr_accessor :controllers, :redis, :targeters
+    attr_accessor :redis
 
     def configure
       yield(self)

@@ -47,6 +47,5 @@ module Fib
         e.set_permission self
       end
     end
-
   end
 end

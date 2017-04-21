@@ -2,13 +2,13 @@ module Fib
   class Trie
     attr_accessor :key, :data, :subnode
 
-    def initialize(key, data, subnode={})
+    def initialize key, data, subnode={}
       @key = key
       @data = data
       @subnode = subnode
     end
 
-    def dig(*node_key)
+    def dig *node_key
       return nil unless node_key.is_a? Array
 
       if node_key.size < 1
@@ -21,7 +21,7 @@ module Fib
       subnode.has_key?(current_key) ? subnode[current_key]&.dig(*node_key) : nil
     end
 
-    def add_sub(key, node)
+    def add_sub key, node
       t = Trie.new key, node
       subnode[key] = t
       t
