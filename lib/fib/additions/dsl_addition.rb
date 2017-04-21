@@ -13,9 +13,10 @@ module Fib
     module TargeterDslAddition
       extend ActiveSupport::Concern
       class_methods do
-        def fib_targeter! key
+        def fib_targeter! key, options={}
           include Fib::Additions::TargeterAddition
           self.fib_container = key
+          self.__fib_inherit = options[:inherit] if options[:inherit]
         end
       end
     end

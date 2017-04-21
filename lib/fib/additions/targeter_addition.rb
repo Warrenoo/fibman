@@ -6,19 +6,28 @@ module Fib
 
       delegate :permissions_info, to: :permissions
 
+      # 最终权限来源自于权限范围与持久化权限的并集
       def permissions
-        @permissions ||= get_persistence_permissions || Fib::PermissionsCollection.new
+        @permissions ||= permissions_scope & (get_persistence_permissions || Fib::PermissionsCollection.new)
+      end
+
+      def permissions_scope
+        fib_inherit.permissions
       end
 
       def save_permissions
         fib_container.fpa.save fib_redis_key, permissions.keys
       end
 
-      def build_permissions *permission_keys
+      def create_permissions *permission_keys
         clear_permissions
+        new_permissiions permission_keys
+        save_permissions
+      end
+
+      def new_permissions *permission_keys
         permission_keys = [permission_keys].flatten
         @permissions = fib_container.permissions.extract_by_keys permission_keys
-        save_permissions
       end
 
       def clear_permissions

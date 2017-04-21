@@ -60,6 +60,7 @@ module Fib
 
       permissions.delete_if { |k, v| permission_collection.permissions.keys.include?(k) }
       build_package
+      self
     end
 
     def & permission_collection
@@ -67,6 +68,7 @@ module Fib
 
       permissions.delete_if { |k, v| !permission_collection.permissions.keys.include?(k) }
       build_package
+      self
     end
 
     def extract_by_keys keys

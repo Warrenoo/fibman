@@ -116,7 +116,7 @@ module Fib
 
     class << self
       def merge *packages
-        new (packages.reduce { |a, e| a + e.origin_elements.values.flatten }).uniq
+        new (packages.reduce([]) { |a, e| a + e.origin_elements.values.flatten }).uniq
       end
     end
   end
