@@ -6,8 +6,20 @@ module Fib
 
       included do
         before_action :fib_include_validation
+        helper_method :can?, :cannot?
+
+        delegate :permissions, to: :current_user
 
         rescue_from Fib::UnPassPermissionValidation, with: :handle_fib_permission_error
+      end
+
+      def can? key, obj=nil
+        key_element = permissions.find_key(key)
+        key_element && key_element.pass_condition?(current_user, obj)
+      end
+
+      def cannot? key, obj=nil
+        !can?(key, obj)
       end
 
       private
@@ -18,7 +30,7 @@ module Fib
 
       # 验证url权限
       def fib_url_validation
-        url_element = current_user.permissions.find_url(request.path)
+        url_element = permissions.find_url(request.path)
 
         unless url_element && url_element.pass_condition?(current_user, request)
           raise Fib::UnPassPermissionValidation
@@ -30,7 +42,7 @@ module Fib
         controller = self.class.name
         action = self.action_name
 
-        action_element = current_user.permissions.find_action(controller, action)
+        action_element = permissions.find_action(controller, action)
 
         unless action_element && action_element.pass_condition?(current_user, request)
           raise Fib::UnPassPermissionValidation
