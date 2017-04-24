@@ -1,143 +1,134 @@
 module Fib
   class PermissionsCollection
-    # permissions: array for merge
-    # permissions_map: hash for search
-    attr_accessor :permissions, :permissions_map
+    extend Forwardable
+
+    attr_reader :permissions, :package
+    attr_accessor :container
+
+    # 通过package 快速查询权限
+    def_delegators :package, :find_key, :find_url, :find_action
 
     def initialize
-      @permissions = []
-      @permissions_map = {}
+      @permissions = {}
+      @package = Fib::ElementPackage.new
     end
 
-    # find permission from collection
-    def get(model, action)
-      return nil unless @permissions_map.key? model
-      return nil unless @permissions_map[model].key? action
-      @permissions_map[model][action]
+    def permissions_info
+      permissions.values.select { |v| v.display }
+        .map { |v| [v.key, v.name] }
     end
 
-    def set(permission)
+    def keys
+      permissions.keys
+    end
+
+    def set permission
       raise ParameterIsNotValid, "set method can't accept expect permission object" unless permission.is_a?(Fib::Permission)
-      @permissions_map[permission.model] ||= {}
-      @permissions_map[permission.model][permission.action_name] = permission
-      @permissions |= [permission]
+      raise ParameterIsNotValid, "permission key #{permission.key} is exist" if permissions.has_key? permission.key
+
+      mset permission
     end
 
     alias_method :<<, :set
 
-    def mset(*permissions)
+    def mset *permissions
       permissions.flatten.each do |p|
         next unless p.is_a?(Fib::Permission)
-        set p
+        @permissions[p.key] = p
       end
+      build_package
     end
 
-    def delete(permission)
-      raise ParameterIsNotValid, "set method can't accept expect permission object" unless permission.is_a?(Fib::Permission)
-      @permissions_map[permission.model] ||= {}
-      @permissions_map[permission.model].delete[permission.action_name]
-      @permissions.delete permission
-    end
-
-    def add(*options)
-      if options.size < 2 && options.first.is_a?(Fib::Permission)
-        set options.first
-      else
-        set Fib::Permission.new(*options)
-      end
-    end
-
-    def bind(klass_1, action_1, klass_2, action_2)
-      raise PermissionIsNotFind unless check_model_action(klass_1, action_1)
-      raise PermissionIsNotFind unless check_model_action(klass_2, action_2)
-
-      @permissions_map[klass_1.to_s][action_1.to_s].bind << @permissions_map[klass_2.to_s][action_2.to_s]
-    end
-
-    def bind_self(klass, *action_arr)
-      first_action = action_arr.shift
-      raise PermissionIsNotFind unless check_model_action(klass.to_s, first_action.to_s)
-
-      record = @permissions_map[klass.to_s][first_action.to_s]
-
-      action_arr.each do |a|
-        next unless check_model_action(klass, a)
-        record.bind << @permissions_map[klass.to_s][a.to_s]
-      end
-    end
+    alias_method :append, :mset
 
     def empty?
-      @permissions.empty?
+      permissions.keys.size == 0
     end
 
-    %w(+ - & |).each do |a|
-      define_method a do |permissions|
-        raise ParameterIsNotValid unless permissions.is_a? Fib::PermissionsCollection
-        self.class.build_by_permissions(self.permissions.send(a, permissions.permissions))
-      end
+    def permission_packages
+      (permissions.values.map(&:package) + permissions.values.map(&:bind_packages)).flatten.uniq
     end
 
-    def inject_cancan(user)
-      params = permission_params(user)
-
-      proc do
-        params.each do |p|
-          p.key?(:cond) ? can(*p[:default], &p[:cond]) : can(*p[:default])
-        end
-      end
+    def build_package
+      @package = Fib::ElementPackage.merge *permission_packages
     end
 
-    def permission_params(user)
-      permissions.map do |p|
+    def + permission_collection
+      raise ParameterIsNotValid, "must be permission_collection" unless permission_collection.is_a?(Fib::PermissionsCollection)
 
-        default_params =
-          p.action_package.map do |a|
-            attrs = { default: [a.action_name.to_sym, Object.const_get(a.model)] }
-            attrs[:cond] = proc { |target| a.condition[target, user] } if a.condition.present?
-            attrs
-          end
-
-        bind_params =
-          if p.bind.empty?
-            []
-          else
-            p.bind.permission_params(user)
-          end
-
-        default_params + bind_params
-
-      end.flatten.uniq
+      current_permission_values = permissions.values
+      build_new { append *(current_permission_values | permission_collection.permissions.values).flatten }
     end
 
-    def check_model_action(model, action)
-      hash = @permissions_map[model.to_s]
-      return false unless hash.is_a? Hash
-      record = hash[action.to_s]
-      return false unless record.is_a? Fib::Permission
+    alias_method :|, :+
 
-      true
+    def - permission_collection
+      raise ParameterIsNotValid, "must be permission_collection" unless permission_collection.is_a?(Fib::PermissionsCollection)
+
+      current_permission_values = permissions.values
+      build_new { append *(current_permission_values - permission_collection.permissions.values).flatten }
     end
 
-    def display
-      @display ||= self.class.build_by_permissions @permissions.select { |p| p.display }
+    def & permission_collection
+      raise ParameterIsNotValid, "must be permission_collection" unless permission_collection.is_a?(Fib::PermissionsCollection)
+
+      current_permission_values = permissions.values
+      build_new { append *(current_permission_values & permission_collection.permissions.values).flatten }
     end
 
-    extend Forwardable
-    require 'fib/action'
-    def_delegators Fib::Action, :can_if
+    def extract_by_keys keys
+      Fib::PermissionsCollection.build_by_permissions select_permissions_by_keys(keys)
+    end
+
+    def select_permissions_by_keys keys
+      permissions.select { |k, v| keys.include? k }.values
+    end
+
+    def build_new &block
+      self.class.new.tap { |n| n.instance_exec(&block) if block_given? }
+    end
+
+    def add key, name="", options={}, &block
+      return unless key.present?
+
+      keys = [options[:key] || []].flatten
+      urls = [options[:url] || []].flatten
+      bind = [options[:bind] || []].flatten
+      actions = options[:action] || []
+      display = options[:display] if options.key? :display
+
+      # 构建权限对象
+      permission = Fib::Permission.new key, name: name
+
+      # 默认创建一个与permission key相同的element key类型
+      permission.append Fib::Element.create_key key
+      permission.append keys.map{ |k| Fib::Element.create_key k }
+
+      permission.append urls.map{ |u| Fib::Element.create_url u }
+      permission.append actions.map{ |a|
+        controller = a.shift
+        a.map { |action| Fib::Element.create_action controller, action }
+      }.flatten
+
+      permission.bind_permission bind
+      display ? permission.display_on : permission.display_off unless display.nil?
+
+      # 执行自定义闭包
+      permission.instance_exec &block if block_given?
+
+      # 设置elements所属permission
+      permission.inject_elements_permission
+      permission.container = container
+
+      # 将该权限放入集合
+      set permission
+    end
+
 
     class << self
-      def all_permissions
-        @all_permissions ||= new
-      end
-
-      def build(&block)
-        all_permissions.instance_exec(&block)
-      end
-
-      def build_by_permissions(permissions)
+      def build_by_permissions permissions
         return unless permissions.is_a? Array
-        new.tap { |p| p.mset permissions }
+        new.tap { |p| p.append(*permissions) }
       end
     end
   end
