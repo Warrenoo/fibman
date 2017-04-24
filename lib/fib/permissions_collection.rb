@@ -3,6 +3,7 @@ module Fib
     extend Forwardable
 
     attr_reader :permissions, :package
+    attr_accessor :container
 
     # 通过package 快速查询权限
     def_delegators :package, :find_key, :find_url, :find_action
@@ -25,8 +26,7 @@ module Fib
       raise ParameterIsNotValid, "set method can't accept expect permission object" unless permission.is_a?(Fib::Permission)
       raise ParameterIsNotValid, "permission key #{permission.key} is exist" if permissions.has_key? permission.key
 
-      @permissions[permission.key] = permission
-      @package += permission.package
+      mset permission
     end
 
     alias_method :<<, :set
@@ -34,8 +34,9 @@ module Fib
     def mset *permissions
       permissions.flatten.each do |p|
         next unless p.is_a?(Fib::Permission)
-        set p
+        @permissions[p.key] = p
       end
+      build_package
     end
 
     alias_method :append, :mset
@@ -44,13 +45,19 @@ module Fib
       permissions.keys.size == 0
     end
 
+    def permission_packages
+      (permissions.values.map(&:package) + permissions.values.map(&:bind_packages)).flatten.uniq
+    end
+
     def build_package
-      @package = Fib::ElementPackage.merge *permissions.values.map(&:package).flatten.uniq
+      @package = Fib::ElementPackage.merge *permission_packages
     end
 
     def + permission_collection
       raise ParameterIsNotValid, "must be permission_collection" unless permission_collection.is_a?(Fib::PermissionsCollection)
-      append *permission_collection.permissions.values
+
+      current_permission_values = permissions.values
+      build_new { append *(current_permission_values | permission_collection.permissions.values).flatten }
     end
 
     alias_method :|, :+
@@ -58,17 +65,15 @@ module Fib
     def - permission_collection
       raise ParameterIsNotValid, "must be permission_collection" unless permission_collection.is_a?(Fib::PermissionsCollection)
 
-      permissions.delete_if { |k, v| permission_collection.permissions.keys.include?(k) }
-      build_package
-      self
+      current_permission_values = permissions.values
+      build_new { append *(current_permission_values - permission_collection.permissions.values).flatten }
     end
 
     def & permission_collection
       raise ParameterIsNotValid, "must be permission_collection" unless permission_collection.is_a?(Fib::PermissionsCollection)
 
-      permissions.delete_if { |k, v| !permission_collection.permissions.keys.include?(k) }
-      build_package
-      self
+      current_permission_values = permissions.values
+      build_new { append *(current_permission_values & permission_collection.permissions.values).flatten }
     end
 
     def extract_by_keys keys
@@ -77,6 +82,10 @@ module Fib
 
     def select_permissions_by_keys keys
       permissions.select { |k, v| keys.include? k }.values
+    end
+
+    def build_new &block
+      self.class.new.tap { |n| n.instance_exec(&block) if block_given? }
     end
 
     def add key, name="", options={}, &block
@@ -96,10 +105,10 @@ module Fib
       permission.append keys.map{ |k| Fib::Element.create_key k }
 
       permission.append urls.map{ |u| Fib::Element.create_url u }
-      permission.append actions.map do |a|
+      permission.append actions.map{ |a|
         controller = a.shift
         a.map { |action| Fib::Element.create_action controller, action }
-      end.flatten
+      }.flatten
 
       permission.bind_permission bind
       display ? permission.display_on : permission.display_off unless display.nil?
@@ -109,6 +118,7 @@ module Fib
 
       # 设置elements所属permission
       permission.inject_elements_permission
+      permission.container = container
 
       # 将该权限放入集合
       set permission

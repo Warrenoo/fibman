@@ -21,7 +21,7 @@ module Fib
 
       def create_permissions *permission_keys
         clear_permissions
-        new_permissiions permission_keys
+        new_permissions permission_keys
         save_permissions
       end
 

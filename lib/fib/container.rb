@@ -16,6 +16,7 @@ module Fib
       @config = Fib::Config.new
       @fpa = Fib::Fpa.new
 
+      @permissions.container = self
       self.class.containers << self
     end
 

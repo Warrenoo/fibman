@@ -3,7 +3,8 @@ module Fib
   class Permission
     extend Forwardable
 
-    attr_reader :key, :name, :package, :explain, :bind, :display
+    attr_reader :key, :name, :package, :bind, :display
+    attr_accessor :container
 
     def_delegators :package, :append
 
@@ -11,9 +12,21 @@ module Fib
       @key = key.to_sym
       @name = options[:name] || key.to_s
       @package = options[:package] || Fib::ElementPackage.new
-      @explain = options[:explain] || "undefined"
       @bind = options[:bind] || []
       @display = options.key?(:display) ? options[:display] : true
+    end
+
+    def bind_packages
+      return [] unless bind.present? || container.present?
+
+      packages = []
+      bind.each do |b|
+        p = container.permissions.permissions[b]
+        next unless p.present?
+        packages << p.package
+        packages << p.bind_packages
+      end
+      packages.flatten
     end
 
     def def_action controller, action, &block
@@ -38,8 +51,8 @@ module Fib
     end
 
     def bind_permission *permission_keys
-      @bind = permission_keys.flatten
-      display_off if bind.size > 0
+      @bind << permission_keys.flatten.map(&:to_sym)
+      @bind.flatten!.uniq!
     end
 
     def inject_elements_permission
