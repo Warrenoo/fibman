@@ -30,6 +30,18 @@ module Fib
         @permissions = fib_container.permissions.extract_by_keys permission_keys
       end
 
+      def add_permissions *permission_keys
+        new_permissions = fib_container.permissions.extract_by_keys permission_keys
+        @permissions += new_permissions
+        save_permissions
+      end
+
+      def del_permissions *permission_keys
+        del_permissions = fib_container.permissions.extract_by_keys permission_keys
+        @permissions -= del_permissions
+        save_permissions
+      end
+
       def clear_permissions
         fib_container.fpa.clear fib_redis_key
         @permissions = nil
