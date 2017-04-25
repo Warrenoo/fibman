@@ -6,7 +6,7 @@ require 'fib/version'
 Gem::Specification.new do |spec|
   spec.name          = 'fib'
   spec.version       = Fib::VERSION
-  spec.authors       = ['沈汪洋']
+  spec.authors       = ['Warrenoo']
   spec.email         = ['541991a@gmail.com']
   spec.summary       = 'Permissions Manager'
   spec.description   = 'Permissions Manager'

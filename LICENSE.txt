@@ -1,4 +1,4 @@
-Copyright (c) 2016 沈汪洋
+Copyright (c) 2017 Warrenoo
 
 MIT License
 
