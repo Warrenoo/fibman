@@ -1,4 +1,4 @@
-module Fib
+module Fibman
   class UnValidElementType < RuntimeError; end
   class UnDefinedModel < RuntimeError; end
   class MissParameter < RuntimeError; end

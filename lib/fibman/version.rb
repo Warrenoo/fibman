@@ -1,4 +1,4 @@
 # 版本
-module Fib
+module Fibman
   VERSION = "2.0.0".freeze
 end

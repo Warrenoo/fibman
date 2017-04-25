@@ -1,8 +1,8 @@
-module Fib
+module Fibman
   module Additions
     module RailsControllerAddition
       extend ActiveSupport::Concern
-      include Fib::Additions::ContainerAddition
+      include Fibman::Additions::ContainerAddition
 
       included do
         before_action :fib_include_validation
@@ -10,7 +10,7 @@ module Fib
 
         delegate :permissions, to: :current_user
 
-        rescue_from Fib::UnPassPermissionValidation, with: :handle_fib_permission_error
+        rescue_from Fibman::UnPassPermissionValidation, with: :handle_fib_permission_error
       end
 
       def can? key, obj=nil
@@ -33,7 +33,7 @@ module Fib
         url_element = permissions.find_url(request.path)
 
         unless url_element && url_element.pass_condition?(current_user, request)
-          raise Fib::UnPassPermissionValidation
+          raise Fibman::UnPassPermissionValidation
         end
       end
 
@@ -45,7 +45,7 @@ module Fib
         action_element = permissions.find_action(controller, action)
 
         unless action_element && action_element.pass_condition?(current_user, request)
-          raise Fib::UnPassPermissionValidation
+          raise Fibman::UnPassPermissionValidation
         end
       end
 

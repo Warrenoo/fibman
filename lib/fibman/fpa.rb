@@ -1,5 +1,5 @@
-# Fib Persistence Adapter
-module Fib
+# Fibman Persistence Adapter
+module Fibman
   class Fpa
     attr_accessor :redis
 

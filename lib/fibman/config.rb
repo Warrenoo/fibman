@@ -1,4 +1,4 @@
-module Fib
+module Fibman
   class Config
     attr_accessor :redis
 

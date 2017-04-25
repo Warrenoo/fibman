@@ -1,14 +1,14 @@
-module Fib
+module Fibman
   module Additions
     module TargeterAddition
       extend ActiveSupport::Concern
-      include Fib::Additions::ContainerAddition
+      include Fibman::Additions::ContainerAddition
 
       delegate :permissions_info, to: :permissions
 
       # 最终权限来源自于权限范围与持久化权限的并集
       def permissions
-        @permissions ||= permissions_scope & (get_persistence_permissions || Fib::PermissionsCollection.new)
+        @permissions ||= permissions_scope & (get_persistence_permissions || Fibman::PermissionsCollection.new)
       end
 
       def permissions_scope
@@ -52,7 +52,7 @@ module Fib
       end
 
       def fib_redis_key
-        "Fib:#{fib_container.key}:#{self.class.name}:#{fib_identify}"
+        "Fibman:#{fib_container.key}:#{self.class.name}:#{fib_identify}"
       end
 
       def fib_identify

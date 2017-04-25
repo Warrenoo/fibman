@@ -1,4 +1,4 @@
-module Fib
+module Fibman
   module Additions
     module ContainerAddition
       extend ActiveSupport::Concern
@@ -23,7 +23,7 @@ module Fib
       class_methods do
         def fib_container
           return unless __fib_container
-          self.__fib_container = __fib_container.is_a?(Fib::Container) ? __fib_container : (Fib.ls.find { |c| c.key == __fib_container } || __fib_container)
+          self.__fib_container = __fib_container.is_a?(Fibman::Container) ? __fib_container : (Fibman.ls.find { |c| c.key == __fib_container } || __fib_container)
         end
 
         def fib_container= key

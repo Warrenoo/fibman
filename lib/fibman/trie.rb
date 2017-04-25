@@ -1,4 +1,4 @@
-module Fib
+module Fibman
   class Trie
     attr_accessor :key, :data, :subnode
 

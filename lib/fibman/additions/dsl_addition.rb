@@ -1,10 +1,10 @@
-module Fib
+module Fibman
   module Additions
     module ControllerDslAddition
       extend ActiveSupport::Concern
       class_methods do
         def fib_controller! key
-          include Fib::Additions::RailsControllerAddition
+          include Fibman::Additions::RailsControllerAddition
           self.fib_container = key
         end
       end
@@ -14,7 +14,7 @@ module Fib
       extend ActiveSupport::Concern
       class_methods do
         def fib_targeter! key, options={}
-          include Fib::Additions::TargeterAddition
+          include Fibman::Additions::TargeterAddition
           self.fib_container = key
           self.__fib_inherit = options[:inherit] if options[:inherit]
         end

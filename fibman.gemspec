@@ -1,11 +1,11 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'fib/version'
+require 'fibman/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = 'fib-man'
-  spec.version       = Fib::VERSION
+  spec.name          = 'fibman'
+  spec.version       = Fibman::VERSION
   spec.authors       = ['Warrenoo']
   spec.email         = ['541991a@gmail.com']
   spec.summary       = '权限管理'

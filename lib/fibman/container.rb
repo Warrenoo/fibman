@@ -1,4 +1,4 @@
-module Fib
+module Fibman
   class Container
     extend Forwardable
 
@@ -12,9 +12,9 @@ module Fib
     def initialize key, name
       @key = key
       @name = name
-      @permissions = Fib::PermissionsCollection.new
-      @config = Fib::Config.new
-      @fpa = Fib::Fpa.new
+      @permissions = Fibman::PermissionsCollection.new
+      @config = Fibman::Config.new
+      @fpa = Fibman::Fpa.new
 
       @permissions.container = self
       self.class.containers << self

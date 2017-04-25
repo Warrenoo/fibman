@@ -1,4 +1,4 @@
-module Fib
+module Fibman
   class PermissionsCollection
     extend Forwardable
 
@@ -10,7 +10,7 @@ module Fib
 
     def initialize
       @permissions = {}
-      @package = Fib::ElementPackage.new
+      @package = Fibman::ElementPackage.new
     end
 
     def permissions_info
@@ -23,7 +23,7 @@ module Fib
     end
 
     def set permission
-      raise ParameterIsNotValid, "set method can't accept expect permission object" unless permission.is_a?(Fib::Permission)
+      raise ParameterIsNotValid, "set method can't accept expect permission object" unless permission.is_a?(Fibman::Permission)
       raise ParameterIsNotValid, "permission key #{permission.key} is exist" if permissions.has_key? permission.key
 
       mset permission
@@ -33,7 +33,7 @@ module Fib
 
     def mset *permissions
       permissions.flatten.each do |p|
-        next unless p.is_a?(Fib::Permission)
+        next unless p.is_a?(Fibman::Permission)
         @permissions[p.key] = p
       end
       build_package
@@ -50,11 +50,11 @@ module Fib
     end
 
     def build_package
-      @package = Fib::ElementPackage.merge *permission_packages
+      @package = Fibman::ElementPackage.merge *permission_packages
     end
 
     def + permission_collection
-      raise ParameterIsNotValid, "must be permission_collection" unless permission_collection.is_a?(Fib::PermissionsCollection)
+      raise ParameterIsNotValid, "must be permission_collection" unless permission_collection.is_a?(Fibman::PermissionsCollection)
 
       current_permission_values = permissions.values
       build_new { append *(current_permission_values | permission_collection.permissions.values).flatten }
@@ -63,21 +63,21 @@ module Fib
     alias_method :|, :+
 
     def - permission_collection
-      raise ParameterIsNotValid, "must be permission_collection" unless permission_collection.is_a?(Fib::PermissionsCollection)
+      raise ParameterIsNotValid, "must be permission_collection" unless permission_collection.is_a?(Fibman::PermissionsCollection)
 
       current_permission_values = permissions.values
       build_new { append *(current_permission_values - permission_collection.permissions.values).flatten }
     end
 
     def & permission_collection
-      raise ParameterIsNotValid, "must be permission_collection" unless permission_collection.is_a?(Fib::PermissionsCollection)
+      raise ParameterIsNotValid, "must be permission_collection" unless permission_collection.is_a?(Fibman::PermissionsCollection)
 
       current_permission_values = permissions.values
       build_new { append *(current_permission_values & permission_collection.permissions.values).flatten }
     end
 
     def extract_by_keys keys
-      Fib::PermissionsCollection.build_by_permissions select_permissions_by_keys(keys)
+      Fibman::PermissionsCollection.build_by_permissions select_permissions_by_keys(keys)
     end
 
     def select_permissions_by_keys keys
@@ -98,16 +98,16 @@ module Fib
       display = options[:display] if options.key? :display
 
       # 构建权限对象
-      permission = Fib::Permission.new key, name: name
+      permission = Fibman::Permission.new key, name: name
 
       # 默认创建一个与permission key相同的element key类型
-      permission.append Fib::Element.create_key key
-      permission.append keys.map{ |k| Fib::Element.create_key k }
+      permission.append Fibman::Element.create_key key
+      permission.append keys.map{ |k| Fibman::Element.create_key k }
 
-      permission.append urls.map{ |u| Fib::Element.create_url u }
+      permission.append urls.map{ |u| Fibman::Element.create_url u }
       permission.append actions.map{ |a|
         controller = a.shift
-        a.map { |action| Fib::Element.create_action controller, action }
+        a.map { |action| Fibman::Element.create_action controller, action }
       }.flatten
 
       permission.bind_permission bind

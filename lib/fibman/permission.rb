@@ -1,5 +1,5 @@
 # Permission Particle
-module Fib
+module Fibman
   class Permission
     extend Forwardable
 
@@ -11,7 +11,7 @@ module Fib
     def initialize key, options={}
       @key = key.to_sym
       @name = options[:name] || key.to_s
-      @package = options[:package] || Fib::ElementPackage.new
+      @package = options[:package] || Fibman::ElementPackage.new
       @bind = options[:bind] || []
       @display = options.key?(:display) ? options[:display] : true
     end
@@ -30,15 +30,15 @@ module Fib
     end
 
     def def_action controller, action, &block
-      @package << Fib::Element.create_action(controller, action, &block)
+      @package << Fibman::Element.create_action(controller, action, &block)
     end
 
     def def_url url, &block
-      @package << Fib::Element.create_url(url, &block)
+      @package << Fibman::Element.create_url(url, &block)
     end
 
     def def_key key, &block
-      @package << Fib::Element.create_key(key, &block)
+      @package << Fibman::Element.create_key(key, &block)
     end
 
     def display_on

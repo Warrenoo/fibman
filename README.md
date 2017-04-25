@@ -1,7 +1,7 @@
-= Fib
-{<img src="https://fury-badge.herokuapp.com/rb/fib-man.png" alt="Gem Version" />}[http://badge.fury.io/rb/fib-man]
+= Fibman
+{<img src="https://fury-badge.herokuapp.com/rb/fibman.png" alt="Gem Version" />}[http://badge.fury.io/rb/fibman]
 
-[Fib](https://github.com/Warrenoo/fib) 是提供系统权限管理验证的模块
+[Fibman](https://github.com/Warrenoo/fibman) 是提供系统权限管理验证的模块
 
 
 ## 功能
@@ -18,7 +18,7 @@
 
 添加到 Gemfile:
 
-    gem 'fib-man', '~> 2.0'
+    gem 'fibman', '~> 2.0'
 
 并运行 `bundle install` 命令。
 
@@ -30,15 +30,15 @@ Fib.new 作为创建权限管理系统的入口，需要定义一个名称和唯
 
 Fib 初始化后可以进行权限的定义与管理
 
-可以在一个系统中定义多个Fib对象，分别定义不同的权限类型，并管理不同的模块
+可以在一个系统中定义多个Fibman对象，分别定义不同的权限类型，并管理不同的模块
 
 ```ruby
-demo_fib = Fib.new(:demo, "权限系统示例")
+demo_fib = Fibman.new(:demo, "权限系统示例")
 ```
 
 ### 2. 配置持久化连接
 
-Fib 使用 Redis 提供数据持久化服务，所以需要配置 redis 的连接对象，默认使用`gem redis-rb`中的api
+Fibman 使用 Redis 提供数据持久化服务，所以需要配置 redis 的连接对象，默认使用`gem redis-rb`中的api
 
 ```
 demo_fib.configure { |c| c.redis = Redis.current }
@@ -177,5 +177,5 @@ end
 
 ## BUG?
 
-如果发现任何问题欢迎[提交Issue](https://github.com/Warrenoo/fib/issues)或者Fork项目并创建Pull Requests
+如果发现任何问题欢迎[提交Issue](https://github.com/Warrenoo/fibman/issues)或者Fork项目并创建Pull Requests
 

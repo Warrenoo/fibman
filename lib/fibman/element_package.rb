@@ -5,7 +5,7 @@
 # urls: url类型element 以'/'分割的字典树
 # 使用lazy_build方式生成keys actions urls，只在查询时构建
 # mutex 为 true 时需要重新build
-module Fib
+module Fibman
   class ElementPackage
     attr_reader :keys, :actions, :urls, :origin_elements, :mutex
 
@@ -13,14 +13,14 @@ module Fib
 
       @keys = {}
       @actions = {}
-      @urls = Fib::Trie.new('.', nil)
+      @urls = Fibman::Trie.new('.', nil)
       @origin_elements = elements.group_by{ |e| e.type }
 
       rebuild
     end
 
     def set element
-      raise ParameterIsNotValid, "param must be Element" unless element.is_a?(Fib::Element)
+      raise ParameterIsNotValid, "param must be Element" unless element.is_a?(Fibman::Element)
 
       origin_elements[element.type] ||= []
       origin_elements[element.type] |= [element]
@@ -32,7 +32,7 @@ module Fib
 
     def mset *elements
       elements.flatten.each do |e|
-        next unless e.is_a?(Fib::Element)
+        next unless e.is_a?(Fibman::Element)
         set e
       end
     end

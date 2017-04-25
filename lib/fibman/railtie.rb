@@ -1,12 +1,12 @@
-module Fib
+module Fibman
   class Railtie < Rails::Railtie
-    initializer "fib.initialize_dsl" do
+    initializer "fibman.initialize_dsl" do
       ActiveSupport.on_load(:action_controller) do
-        include Fib::Additions::ControllerDslAddition
+        include Fibman::Additions::ControllerDslAddition
       end
 
       ActiveSupport.on_load(:active_record) do
-        include Fib::Additions::TargeterDslAddition
+        include Fibman::Additions::TargeterDslAddition
       end
     end
   end

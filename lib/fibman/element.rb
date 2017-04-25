@@ -1,4 +1,4 @@
-module Fib
+module Fibman
   class Element
     attr_reader :type, :core, :condition, :permission_key
     TYPE = %w(key action url).freeze
@@ -12,7 +12,7 @@ module Fib
     end
 
     def set_permission permission
-      @permission_key = permission.is_a?(Fib::Permission) ? permission.key : permission
+      @permission_key = permission.is_a?(Fibman::Permission) ? permission.key : permission
     end
 
     def pass_condition? *args
