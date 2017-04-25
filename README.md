@@ -60,7 +60,7 @@ demo_fib.configure { |c| c.redis = Redis.current }
 
 权限集与权限集直接可以进行绑定。当A权限集绑定了B权限集，目标对象拥有A权限集时，则默认也拥有B权限集。绑定关系可设定多个。
 
-```
+```ruby
 demo_fib.build do
   # 通过参数定义
   # action 定义action类权限
