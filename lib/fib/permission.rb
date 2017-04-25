@@ -42,7 +42,6 @@ module Fib
     end
 
     def display_on
-      return unless bind.size == 0
       @display = true
     end
 
