@@ -8,7 +8,7 @@ module Fibman
 
       # 最终权限来源自于权限范围与持久化权限的并集
       def permissions
-        @permissions ||= permissions_scope & (get_persistence_permissions || Fibman::PermissionsCollection.new)
+        @permissions ||= permissions_scope & (get_persistence_permissions || permissions_scope)
       end
 
       def permissions_scope
@@ -16,6 +16,7 @@ module Fibman
       end
 
       def save_permissions
+        fib_container.fpa.clear fib_redis_key
         fib_container.fpa.save fib_redis_key, permissions.keys
       end
 
@@ -32,13 +33,13 @@ module Fibman
 
       def add_permissions *permission_keys
         new_permissions = fib_container.permissions.extract_by_keys permission_keys
-        @permissions += new_permissions
+        @permissions = permissions + new_permissions
         save_permissions
       end
 
       def del_permissions *permission_keys
         del_permissions = fib_container.permissions.extract_by_keys permission_keys
-        @permissions -= del_permissions
+        @permissions = permissions - del_permissions
         save_permissions
       end
 

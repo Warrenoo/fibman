@@ -18,7 +18,7 @@
 
 添加到 Gemfile:
 
-    gem 'fibman', '~> 2.0.1'
+    gem 'fibman', '~> 2.0.4'
 
 并运行 `bundle install` 命令。
 
