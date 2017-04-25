@@ -1,5 +1,5 @@
-= Fib
-{<img src="https://fury-badge.herokuapp.com/rb/fib-man.png" alt="Gem Version" />}[http://badge.fury.io/rb/fib-man]
+# Fib
+[<img src="https://fury-badge.herokuapp.com/rb/fib-man.png" alt="Gem Version" />](http://badge.fury.io/rb/fib-man)
 
 [Fib](https://github.com/Warrenoo/fib) 是提供系统权限管理验证的模块
 
