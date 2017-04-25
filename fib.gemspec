@@ -4,13 +4,14 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'fib/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = 'fib'
+  spec.name          = 'fib-man'
   spec.version       = Fib::VERSION
   spec.authors       = ['Warrenoo']
   spec.email         = ['541991a@gmail.com']
   spec.summary       = '权限管理'
   spec.description   = '多模块持久化权限管理系统'
   spec.license       = 'MIT'
+  spec.homepage       = 'https://github.com/Warrenoo/fib'
 
   spec.files         = `git ls-files -z`.split("\x0")
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
