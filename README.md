@@ -1,5 +1,5 @@
 # Fibman
-[<img src="https://fury-badge.herokuapp.com/rb/fibman.png" alt="Gem Version" />](http://badge.fury.io/rb/fibman)
+[<img src="http://badge.fury.io/rb/fibman.png" alt="Gem Version" />](http://badge.fury.io/rb/fibman)
 
 [Fibman](https://github.com/Warrenoo/fibman) 是提供系统权限管理验证的模块
 
