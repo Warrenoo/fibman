@@ -15,8 +15,7 @@ module Fibman
         return data
       end
 
-      current_key = node_key.first
-      node_key.shift
+      current_key = node_key.shift
 
       subnode.has_key?(current_key) ? subnode[current_key]&.dig(*node_key) : nil
     end

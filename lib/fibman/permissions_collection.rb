@@ -22,6 +22,10 @@ module Fibman
       permissions.keys
     end
 
+    def has? key
+      keys.include? key
+    end
+
     def set permission
       raise ParameterIsNotValid, "set method can't accept expect permission object" unless permission.is_a?(Fibman::Permission)
       raise ParameterIsNotValid, "permission key #{permission.key} is exist" if permissions.has_key? permission.key

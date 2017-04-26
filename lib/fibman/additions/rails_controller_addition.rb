@@ -25,7 +25,11 @@ module Fibman
       private
 
       def handle_fib_permission_error
-        render status: 401, plain: "No permission" and return
+        if File.exist? "#{Rails.root}/public/401.html"
+          render status: :unauthorized, file: "public/401.html", layout: nil and return
+        else
+          render status: :unauthorized, plain: "no permission" and return
+        end
       end
 
       # 验证url权限
