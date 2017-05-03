@@ -56,6 +56,8 @@ module Fibman
       # 如果该请求访问未在权限系统中设置
       # 通过并提示
       def fib_include_validation
+        return unless current_user.present?
+
         has_action = fib_container.permissions.find_action(self.class.name, self.action_name).present?
         has_url = fib_container.permissions.find_url(request.path).present?
 

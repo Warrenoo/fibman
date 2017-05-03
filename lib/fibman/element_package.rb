@@ -13,7 +13,7 @@ module Fibman
 
       @keys = {}
       @actions = {}
-      @urls = Fibman::Trie.new('.', nil)
+      @urls = Fibman::Trie.create
       @origin_elements = elements.group_by{ |e| e.type }
 
       rebuild

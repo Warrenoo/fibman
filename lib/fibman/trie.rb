@@ -25,5 +25,11 @@ module Fibman
       subnode[key] = t
       t
     end
+
+    class << self
+      def create
+        Fibman::Trie.new('.', nil)
+      end
+    end
   end
 end
